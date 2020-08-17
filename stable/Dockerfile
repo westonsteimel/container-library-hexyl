@@ -1,11 +1,14 @@
-ARG GIT_TAG="v0.8.0"
-ARG HEXYL_VERSION="${GIT_TAG}"
+ARG SOURCE
+ARG REVISION
+ARG CREATED
+ARG VERSION
+ARG GIT_REF="${VERSION}"
 
 FROM westonsteimel/rust-static-builder:stable as builder
 
-ARG GIT_TAG
+ARG GIT_REF
 
-RUN git clone --depth 1 --branch "${GIT_TAG}" https://github.com/sharkdp/hexyl /build/hexyl \
+RUN git clone --depth 1 --branch "${GIT_REF}" https://github.com/sharkdp/hexyl /build/hexyl \
     && cd /build/hexyl \
     && /home/builder/build.sh
 
@@ -16,7 +19,10 @@ RUN addgroup hexyl \
 
 FROM scratch
 
-ARG HEXYL_VERSION
+ARG VERSION
+ARG SOURCE
+ARG REVISION
+ARG CREATED
 
 COPY --from=config /etc/passwd /etc/passwd
 COPY --from=builder /build/hexyl/target/x86_64-unknown-linux-musl/release/hexyl /usr/local/bin/hexyl
@@ -30,6 +36,8 @@ CMD ["--help"]
 
 LABEL org.opencontainers.image.title="hexyl" \
     org.opencontainers.image.description="hexyl in Docker" \
-    org.opencontainers.image.version="${HEXYL_VERSION}" \
-    version="${HEXYL_VERSION}"
+    org.opencontainers.image.source="${SOURCE}" \
+    org.opencontainers.image.revision="${REVISION}" \
+    org.opencontainers.image.created="${CREATED}" \
+    org.opencontainers.image.version="${VERSION}"
 
