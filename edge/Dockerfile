@@ -10,9 +10,9 @@ ARG GIT_REF
 
 RUN git clone --depth 1 --branch "${GIT_REF}" https://github.com/sharkdp/hexyl /build/hexyl \
     && cd /build/hexyl \
-    && mkdir output \
+    && mkdir /build/output \
     && /home/builder/build.sh \
-    && cp /build/hexyl/target/${TARGET}/release/hexyl /build/hexyl/output/
+    && cp /build/hexyl/target/${TARGET}/release/hexyl /build/output/
     
 FROM alpine:edge as config
 
@@ -27,7 +27,7 @@ ARG REVISION
 ARG CREATED
 
 COPY --from=config /etc/passwd /etc/passwd
-COPY --from=builder /build/hexyl/output/ /usr/local/bin/hexyl
+COPY --from=builder /build/output/hexyl /usr/local/bin/hexyl
 
 USER hexyl
 
