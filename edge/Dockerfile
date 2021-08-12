@@ -1,19 +1,18 @@
-ARG SOURCE
-ARG REVISION
-ARG CREATED
+ARG VERSION="master"
+ARG REVISION=""
+
+FROM westonsteimel/rust-static-builder:stable as builder
+
 ARG VERSION
-ARG GIT_REF="${VERSION}"
+ARG REVISION
 
-FROM westonsteimel/rust-static-builder:nightly as builder
-
-ARG GIT_REF
-
-RUN git clone --depth 1 --branch "${GIT_REF}" https://github.com/sharkdp/hexyl /build/hexyl \
+RUN git clone --branch "${VERSION}" https://github.com/sharkdp/hexyl /build/hexyl \
     && cd /build/hexyl \
+    && git reset --hard "${REVISION}" \
     && mkdir /build/output \
-    && /home/builder/build.sh \
+    && NOCOMPRESS=1 /home/builder/build.sh \
     && cp /build/hexyl/target/${TARGET}/release/hexyl /build/output/
-    
+
 FROM alpine:edge as config
 
 RUN addgroup hexyl \
@@ -22,24 +21,22 @@ RUN addgroup hexyl \
 FROM scratch
 
 ARG VERSION
-ARG SOURCE
 ARG REVISION
-ARG CREATED
+ENV HEXYL_VERSION="${VERSION}" \
+    HEXYL_REVISION="${REVISION}" \
+    TERM="xterm-256color"
+
 
 COPY --from=config /etc/passwd /etc/passwd
 COPY --from=builder /build/output/hexyl /usr/local/bin/hexyl
 
 USER hexyl
 
-ENV TERM xterm-256color
-
 ENTRYPOINT ["/usr/local/bin/hexyl"]
 CMD ["--help"]
 
 LABEL org.opencontainers.image.title="hexyl" \
     org.opencontainers.image.description="hexyl in Docker" \
-    org.opencontainers.image.source="${SOURCE}" \
     org.opencontainers.image.revision="${REVISION}" \
-    org.opencontainers.image.created="${CREATED}" \
     org.opencontainers.image.version="${VERSION}"
 
