@@ -9,9 +9,7 @@ ARG REVISION
 RUN git clone --branch "${VERSION}" https://github.com/sharkdp/hexyl /build/hexyl \
     && cd /build/hexyl \
     && git reset --hard "${REVISION}" \
-    && mkdir /build/output \
-    && NOCOMPRESS=1 /home/builder/build.sh \
-    && cp /build/hexyl/target/${TARGET}/release/hexyl /build/output/
+    && NOCOMPRESS=1 /home/builder/build.sh 
 
 FROM alpine:edge as config
 
@@ -28,7 +26,7 @@ ENV HEXYL_VERSION="${VERSION}" \
 
 
 COPY --from=config /etc/passwd /etc/passwd
-COPY --from=builder /build/output/hexyl /usr/local/bin/hexyl
+COPY --from=builder /build/artifacts/hexyl /usr/local/bin/hexyl
 
 USER hexyl
 
