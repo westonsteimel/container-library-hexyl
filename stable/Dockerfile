@@ -6,7 +6,7 @@ FROM westonsteimel/rust-static-builder:stable as builder
 ARG VERSION
 ARG REVISION
 
-RUN git clone --branch "${VERSION}" https://github.com/sharkdp/hexyl /build/hexyl \
+RUN git clone --branch "v${VERSION}" https://github.com/sharkdp/hexyl /build/hexyl \
     && cd /build/hexyl \
     && git reset --hard "${REVISION}" \
     && mkdir /build/output \
